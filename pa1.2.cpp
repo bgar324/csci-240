@@ -35,6 +35,8 @@ int main(){
   int percentageChance;
   srand((unsigned)time(0));
 
+  cout << "People Percent" << endl;
+
   // ok so this gives us a value 
   for(int i = 5; i <= 100; i+=5){
     count = 0;
@@ -45,12 +47,8 @@ int main(){
       }
     }
     double chances = (static_cast<double>(count) / 100.0) * 100.0;
-    cout << i << " People: " << chances << "%" << endl;
+    cout << i << "       " << chances << "%" << endl;
   }
 
   return 0;
 }
-
-/*
-run experiment 100 times, why? to make a 
-*/

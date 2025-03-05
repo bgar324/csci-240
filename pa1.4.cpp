@@ -17,6 +17,11 @@ private:
   vector<string> transactionTypes;
 
 protected:
+  double netCharges;
+  double averageCharge;
+  double highestCharge;
+  vector<double> avgCalc;
+  double avg;
   double balance; // current balance (measured in dollars)
 
 public:
@@ -42,6 +47,13 @@ public:
     balance += price; // update the balance
     purchases.push_back(price);
     transactionTypes.push_back("charge");
+
+    netCharges += price; // update netCharges as balance != netCharges
+    avgCalc.push_back(price);
+
+    //calculate the highest charge
+    if(price > highestCharge) highestCharge = price;
+    
     return true;      // announce the good news
   }
 
@@ -66,10 +78,14 @@ public:
   }
 
   void display_history(){
-    for(int i = 0 ; i < purchases.size(); i++){
-      cout << transactionTypes[i] << ": " << purchases[i] << endl;
+    cout << "Transactions for " << customer << ":\n";
+    cout << "-----------------------------------\n";
+    for(int i = 0; i < purchases.size(); i++){
+        cout << transactionTypes[i] << ": $" << purchases[i] << endl;
     }
-  }
+    cout << "-----------------------------------\n";
+}
+
 
   void addInterest(){
     double interestAmount = balance * (interest / 12 / 100);
@@ -77,6 +93,20 @@ public:
     purchases.push_back(interestAmount);
     transactionTypes.push_back("interest");
   } 
+
+  void setZero(){
+    netCharges = 0;
+    highestCharge = 0;
+    averageCharge = 0;
+  }
+
+  void calcAverage(){
+    if (avgCalc.empty()) {
+      avg = 0;  
+  } else {
+      avg = netCharges / avgCalc.size();
+  }
+  }
 
   // ---------- Overloaded output operator (as friend) ---------
   friend ostream &operator<<(ostream &out, const CreditCard &c)
@@ -86,6 +116,9 @@ public:
     out << "Account = " << c.account << endl;
     out << "Balance = " << c.balance << endl;
     out << "Limit = " << c.limit << endl;
+    out << "Net Charges for month = " << c.netCharges << endl;
+    out << "Highest Charge for the month = " << c.highestCharge << endl;
+    out << "Average Charges for the month = " << c.avg << endl;
     return out;
   }
 };
@@ -117,6 +150,9 @@ protected:
     > interest = +
   */
 
+  //transactions are hardcoded for consistent testing as the prompt does not specify user input.
+
+
   vector<vector<double>> chargeAmounts = {
     {200.0, 150.0},    // Month 1
     {300.0},         // Month 2
@@ -129,38 +165,46 @@ protected:
   vector<double> paymentAmounts = {150, 200, 100, 250, 300, 400};
 
   for(int i = 0; i < 6; i++){
+    testCase1.setZero();
+    testCase2.setZero();
+
+    cout << "\nMonth " << (i + 1) << " Transactions:\n";
+
+    //  testCase1
+
     //a
     for (double charge : chargeAmounts[i]) {
-      testCase1.charge(charge);
+        testCase1.charge(charge);
     }
 
     //b
-    double payment = paymentAmounts[i];
-    testCase1.make_payment(payment);
+    testCase1.make_payment(paymentAmounts[i]);
 
     //c
     testCase1.addInterest();
 
     //d
+    testCase1.calcAverage();
     cout << testCase1 << endl;
-  }
 
-  for(int i = 0; i < 6; i++){
+    // testCase2
+
     //a
     for (double charge : chargeAmounts[i]) {
-      testCase2.charge(charge);
+        testCase2.charge(charge);
     }
 
     //b
-    double payment = paymentAmounts[i];
-    testCase2.make_payment(payment);
+    testCase2.make_payment(paymentAmounts[i]);
 
     //c
     testCase2.addInterest();
 
     //d
+    testCase2.calcAverage();
     cout << testCase2 << endl;
-  }
+}
+
   
   cout << "test case 1" << endl;
   testCase1.display_history();
