@@ -27,10 +27,7 @@ string arr[10];
 int numElems = 0;
 
 bool checkSize(){
-  if(numElems >= 10){
-    return true;
-  }
-  return false;
+  return numElems >= 10;
 };
 
 void insertRear(string name){
@@ -110,6 +107,24 @@ void printList(){
   cout << endl;
 }
 
+void recPrint(string arr[], int numElems){
+  static int count = 0;
+  if(count == numElems){
+    count = 0;
+    return;
+  }
+
+  cout << arr[count];
+  if(count < numElems - 1){
+    cout << ", ";
+  } else {
+    cout << endl;
+  }
+  
+  count++;
+  recPrint(arr, numElems);
+}
+
 int main(){
   cout << "=== Insert Rear ===" << endl;
   insertRear("Jo");
@@ -148,7 +163,8 @@ int main(){
   cout << "\n=== Invalid Remove Index ===" << endl;
   removeIndex(10); // should print "bad index"
 
-  return 0;
+  cout << "\n=== Recursive Print EC ===" << endl;
+  recPrint(arr, numElems);
   
   return 0;
 }
