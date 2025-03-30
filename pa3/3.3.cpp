@@ -94,50 +94,56 @@ class TextEditor{
       cursor = nullptr;
     };
 
-    void left(){
-      if(head == nullptr) return;
-      if(cursor == head) return;
-      if(cursor == nullptr){
-        cursor = tail;
+    void left() {
+      if (head == nullptr) return;        
+      if (cursor == head) return;     
+      
+      if (cursor == nullptr) {
+          cursor = tail;
       } else {
-        cursor = cursor->prev;
+          cursor = cursor->prev;
       }
-    };
+  }
+  
 
-    void right(){
-      if(head == nullptr) return;
-      if(cursor == head) return;
-      if(cursor == nullptr){
-        cursor = head;
-      } else{
+  void right() {
+    if (head == nullptr) return;  
+    if (cursor == nullptr) return;    
+
+    if (cursor == tail) {
+        cursor = nullptr;
+    } else {
         cursor = cursor->next;
-      }
-    };
+    }
+}
+
 
     void insert(char c){
+      if (!isalpha(c) && c != ' ') return;
+  
       Node* temp = new Node();
       temp->data = c;
       temp->next = cursor;
-      temp->prev = (cursor ? cursor->prev : tail);
-
-      if(cursor != nullptr){
-        if(cursor->prev != nullptr){
-          cursor->prev->next = temp;
-        } else {
-          head = temp;
-        }
-        cursor->prev = temp;
-      } else { //cursor is at the end
-        if(tail != nullptr){
-          tail->next = temp;
+  
+      if (cursor == nullptr) {
           temp->prev = tail;
+          if (tail != nullptr) tail->next = temp;
+          else head = temp;
           tail = temp;
-        } else {
-          head = tail = temp;
-        }
+      } else {
+          temp->prev = cursor->prev;
+          if (cursor->prev != nullptr) {
+              cursor->prev->next = temp;
+          } else {
+              head = temp;
+          }
+          cursor->prev = temp;
       }
+  
       cursor = temp->next;
-    };
+  }
+  
+  
 
     void remove(){
       if(head == nullptr || cursor == head){
@@ -191,64 +197,63 @@ class TextEditor{
 int main() {
   TextEditor editor("hHello Word");
 
-  cout << "Editing document . . .\n";
   int option;
   char inputChar;
 
   do {
-      cout << "\nEditing Menu\n";
-      cout << "1. Left\n";
-      cout << "2. Right\n";
-      cout << "3. Insert character\n";
-      cout << "4. Remove character\n";
-      cout << "5. Move to beginning\n";
-      cout << "6. Move to the end\n";
-      cout << "7. Display text\n";
-      cout << "8. Quit\n";
-      cout << "Enter an option: ";
-      cin >> option;
+    cout << "\n--- Text Editor Menu ---\n";
+    cout << "1. Move cursor left\n";
+    cout << "2. Move cursor right\n";
+    cout << "3. Insert character\n";
+    cout << "4. Remove character\n";
+    cout << "5. Move cursor to beginning\n";
+    cout << "6. Move cursor to end\n";
+    cout << "7. Display current text\n";
+    cout << "8. Quit\n";
+    cout << "Choose an option: ";
+    cin >> option;
 
-      switch(option) {
-          case 1:
-              editor.left();
-              cout << "Moved cursor left.\n";
-              break;
-          case 2:
-              editor.right();
-              cout << "Moved cursor right.\n";
-              break;
-          case 3:
-              cout << "Enter a character: ";
-              cin >> inputChar;
-              if (isalpha(inputChar) || inputChar == ' ') {
-                  editor.insert(inputChar);
-                  cout << "Inserted character " << inputChar << ".\n";
-              } else {
-                  cout << "Ignore invalid character.\n";
-              }
-              break;
-          case 4:
-              editor.remove();
-              cout << "Removed character.\n";
-              break;
-          case 5:
-              editor.first();
-              cout << "Moved cursor to the beginning.\n";
-              break;
-          case 6:
-              editor.last();
-              cout << "Moved cursor to the end.\n";
-              break;
-          case 7:
-              cout << "String: ";
-              editor.display();
-              break;
-          case 8:
-              cout << "Exiting editor.\n";
-              break;
-          default:
-              cout << "Invalid option.\n";
-      }
+    switch(option) {
+      case 1:
+        editor.left();
+        cout << "Moved cursor left.\n";
+        break;
+      case 2:
+        editor.right();
+        cout << "Moved cursor right.\n";
+        break;
+      case 3:
+        cout << "Enter character to insert: ";
+        cin >> inputChar;
+        if (isalpha(inputChar) || inputChar == ' ') {
+          editor.insert(inputChar);
+          cout << "Character '" << inputChar << "' inserted.\n";
+        } else {
+          cout << "Invalid character. Only letters and spaces are allowed.\n";
+        }
+        break;
+      case 4:
+        editor.remove();
+        cout << "Removed character before cursor.\n";
+        break;
+      case 5:
+        editor.first();
+        cout << "Cursor moved to beginning.\n";
+        break;
+      case 6:
+        editor.last();
+        cout << "Cursor moved to end.\n";
+        break;
+      case 7:
+        cout << "Current text: ";
+        editor.display();
+        break;
+      case 8:
+        cout << "Exiting editor.\n";
+        break;
+      default:
+        cout << "Invalid option. Try again.\n";
+    }
 
   } while(option != 8);
 
