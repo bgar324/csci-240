@@ -75,7 +75,7 @@ int main(){
 
   cout << evaluatePostfix("17 2 3 + / 13 -") << endl;   // -10
   cout << evaluatePostfix("5 2 3 + *") << endl;         // 25
-  cout << evaluatePostfix("2 3 8 *") << endl;           // 2
+  cout << evaluatePostfix("2 3 2 % *") << endl;           // 2
   cout << evaluatePostfix("-23 123 + 2 *") << endl;     // 200
 
   return 0;
