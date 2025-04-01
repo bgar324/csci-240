@@ -28,7 +28,7 @@ class MyLinkedQueue{
     };
     T front(){
       if(empty()){
-        cout << "queue is full" << endl;
+        cout << "queue is empty" << endl;
         exit(1);
       }
       return head->data;
@@ -49,7 +49,7 @@ class MyLinkedQueue{
     };
     T dequeue(){
       if(empty()){
-        cout << "queue is full" << endl;
+        cout << "queue is empty" << endl;
         exit(1);
       }
       Node* temp = head;

@@ -71,12 +71,62 @@ int evaluatePostfix(string expression) {
     return s.pop(); // final result
 }
 
+// EXTRA CREDIT //
+int precedence(char op){
+  if(op == '+' || op == '-'){
+    return 1;
+  } else if (op == '*' || op == '/' || op == '%'){
+    return 2;
+  } else {
+    return 0;
+  }
+}
+
+string infixToPostfix(string infix){
+  MyArrayStack<char> opStack;
+  stringstream ss(infix);
+  string token;
+  string output = "";
+
+  while(ss >> token){
+    if(isdigit(token[0]) || (token.length() > 1 && token[0] == '-' && isdigit(token[1]))){
+      output += token + " ";
+    } else if (token == "("){
+      opStack.push('(');
+    } else if(token == ")"){
+      while(!opStack.empty() && opStack.top() != '('){
+        output += opStack.pop();
+        output += " ";
+      }
+      if(!opStack.empty()){
+        opStack.pop();
+      }
+    } else {
+      while(!opStack.empty() && precedence(opStack.top()) >= precedence(token[0])){
+        output += opStack.pop();
+        output += " ";
+      }
+      opStack.push(token[0]);
+    }
+  }
+  while(!opStack.empty()){
+    output += opStack.pop();
+    output += " ";
+  }
+  return output;
+}
+
 int main(){
 
   cout << evaluatePostfix("17 2 3 + / 13 -") << endl;   // -10
   cout << evaluatePostfix("5 2 3 + *") << endl;         // 25
   cout << evaluatePostfix("2 3 2 % *") << endl;           // 2
   cout << evaluatePostfix("-23 123 + 2 *") << endl;     // 200
+
+  cout << infixToPostfix("17 / ( 2 + 3 ) - 13") << endl;   // 17 2 3 + / 13 -
+  cout << infixToPostfix("5 * ( 2 + 3 )") << endl;         // 5 2 3 + *
+  cout << infixToPostfix("2 * ( 3 % 2 )") << endl;         // 2 3 2 % *
+  cout << infixToPostfix("( -23 + 123 ) * 2") << endl;     // -23 123 + 2 *
 
   return 0;
 }
