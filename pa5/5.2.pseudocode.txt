@@ -1,0 +1,9 @@
+queue = new Queue()
+queue.enqueue(root)
+
+while not queue.isEmpty()
+  current = queue.dequeue();
+  process(current)
+
+  for child in current.children;
+    queue.enqueue(child);

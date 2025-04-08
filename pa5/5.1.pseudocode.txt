@@ -1,0 +1,10 @@
+stack = new Stack()
+stack.push(root)
+
+while not stack.isempty();
+  current = stack.pop()
+  process(current) //whatever needs to be done, like printing a value
+
+  //push children from right to left
+  for i = current.children.length - 1 until 0 
+    stack.push(current.children[i])
