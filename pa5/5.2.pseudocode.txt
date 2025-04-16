@@ -1,9 +1,17 @@
-queue = new Queue()
-queue.enqueue(root)
+function levelOrderTraversal(root)
+    if root is null then
+        return
+    end if
 
-while not queue.isEmpty()
-  current = queue.dequeue();
-  process(current)
+    queue = new queue
+    enqueue root to queue
 
-  for child in current.children;
-    queue.enqueue(child);
+    while queue is not empty do
+        node = dequeue from queue
+        visit node
+
+        for each child in node.children do
+            enqueue child to queue
+        end for
+    end while
+end function

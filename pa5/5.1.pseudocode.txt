@@ -1,10 +1,17 @@
-stack = new Stack()
-stack.push(root)
+function preorderTraversal(root)
+    if root is null then
+        return
+    end if
 
-while not stack.isempty();
-  current = stack.pop()
-  process(current) //whatever needs to be done, like printing a value
+    stack = new stack
+    push root to stack
 
-  //push children from right to left
-  for i = current.children.length - 1 until 0 
-    stack.push(current.children[i])
+    while stack is not empty do
+        node = pop from stack
+        visit node
+
+        for i = length of node.children - 1 down to 0 do
+            push node.children[i] to stack
+        end for
+    end while
+end function
