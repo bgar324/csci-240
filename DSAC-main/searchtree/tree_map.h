@@ -4,8 +4,8 @@
 #include <utility>
 #include <vector>
 
-#include "map/abstract_map.h"
-#include "tree/linked_binary_tree.h"
+#include "../map/abstract_map.h"
+#include "../tree/linked_binary_tree.h"
 
 namespace dsac::search_tree {
 
