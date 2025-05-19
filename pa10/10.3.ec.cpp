@@ -2,6 +2,8 @@
 #include <string>
 #include <unordered_map>
 #include <iomanip>
+#include <vector>
+#include <algorithm>
 #include "../DSAC-main/priority/heap_priority_queue.h"
 #include "../DSAC-main/tree/linked_binary_tree.h"
 using namespace std;
@@ -24,11 +26,12 @@ class HuffmanTree {
 private:
     LinkedBinaryTree<pair<char, int>> tree;
     unordered_map<char, string> codes;
+    unordered_map<char, int> charFrequencies;
     
     void generateCodes(typename LinkedBinaryTree<pair<char, int>>::Position p, string code) {
         if (p.is_external()) {
             if (p.element().first != '\0') {
-                codes[p.element().first] = code;
+                codes[p.element().first] = code.empty() ? "0" : code;
             }
             return;
         }
@@ -44,17 +47,22 @@ private:
     
 public:
     HuffmanTree(const string& text) {
-        unordered_map<char, int> frequencies;
         for (char c : text) {
-            frequencies[c]++;
+            charFrequencies[c]++;
         }
         
         HeapPriorityQueue<HuffmanEntry> pq;
         
-        for (const auto& [c, freq] : frequencies) {
+        for (const auto& [c, freq] : charFrequencies) {
             LinkedBinaryTree<pair<char, int>> t;
             t.add_root(make_pair(c, freq));
             pq.insert(HuffmanEntry(freq, t));
+        }
+        
+        if (pq.size() == 1) {
+            tree = pq.min().tree;
+            codes[tree.root().element().first] = "0";
+            return;
         }
         
         while (pq.size() > 1) {
@@ -92,6 +100,14 @@ public:
         return result;
     }
     
+    int getTotalBits(const string& text) const {
+        int totalBits = 0;
+        for (char c : text) {
+            totalBits += getCode(c).length();
+        }
+        return totalBits;
+    }
+    
     void printTree() const {
         cout << "Huffman coding tree:" << endl;
         
@@ -121,7 +137,7 @@ public:
     }
     
     void printTreeAlt() const {
-        cout << "Alt Huffman coding tree:" << endl;
+        cout << "Huffman coding tree:" << endl;
         
         function<void(typename LinkedBinaryTree<pair<char, int>>::Position, int)> printNode = 
             [&](typename LinkedBinaryTree<pair<char, int>>::Position p, int indent) {
@@ -146,6 +162,26 @@ public:
         
         printNode(tree.root(), 0);
     }
+    
+    void printEncodingTable() const {
+        vector<pair<char, int>> sortedChars(charFrequencies.begin(), charFrequencies.end());
+        sort(sortedChars.begin(), sortedChars.end());
+        
+        cout << "\nChar\tFrequency\tEncoded bits" << endl;
+        for (const auto& [c, freq] : sortedChars) {
+            cout << (c == ' ' ? "' '" : (c == '_' ? "'_'" : string(1, c))) << "\t"
+                 << freq << "\t\t"
+                 << getCode(c) << endl;
+        }
+    }
+    
+    void printEncodedMessage(const string& text) const {
+        string encodedMessage = encode(text);
+        int totalBits = getTotalBits(text);
+        
+        cout << "\nNumber of bits to encode message: " << totalBits << endl;
+        cout << encodedMessage << endl;
+    }
 };
 
 int main() {
@@ -160,9 +196,9 @@ int main() {
     
     huffman.printTree();
     
-    cout << endl;
-    
-    huffman.printTreeAlt();
+    // Print encoding table and encoded message (extra credit)
+    huffman.printEncodingTable();
+    huffman.printEncodedMessage(input);
     
     return 0;
 }
