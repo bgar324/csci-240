@@ -27,6 +27,8 @@ This repository contains my work for CSCI 240 (Data Structures and Algorithms) a
 
 ### Exams
 - `exam1/` - [Exam 1 Materials](exam1/)
+- `exam2 material not shared.`
+
 
 ## 🛠️ Technologies Used
 - C++
@@ -44,14 +46,3 @@ This repository contains my work for CSCI 240 (Data Structures and Algorithms) a
 
 ## 📅 Last Updated
 June 2024
-
----
-
-```
-⠀⠀⠀⡔⠢⠀⡔⠒⡀⠀⠀
-⡠⢄⡸⠁⠀⣦⠁⠀⡇⡠⢄
-⢇⠀⠱⠣⡴⠥⢦⡔⡎⠀⢰
-⠈⠓⡸⠎⠀⠀⠀⠱⢕⠐⠁
-⠀⢹⠀⠀⠀⠀⠀⠀⠀⡏⠀
-⠀⠀⠑⠠⠔⠒⠢⠤⠊⠀⠀
-```
