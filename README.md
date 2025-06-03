@@ -40,7 +40,8 @@ This repository contains my work for CSCI 240 (Data Structures and Algorithms) a
 - Solutions are provided for educational purposes
 
 ## 📚 Resources
-- Course textbook
+- Course textbook (zyBook)
+- `DSAC-main/` - [Class implementations from zyBook textbook](DSAC-main/)
 - Lecture notes
 - Online resources for data structures and algorithms
 
