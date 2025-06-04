@@ -2,7 +2,7 @@
 
 #include "graph.h"
 #include "partition.h"
-#include "priority/heap_adaptable_priority_queue.h"
+#include "../priority/heap_adaptable_priority_queue.h"
 
 #include <algorithm>
 #include <limits>            // std::numeric_limits<int>::max

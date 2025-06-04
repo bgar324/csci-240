@@ -4,6 +4,12 @@
 #include <iostream>
 #include <list>
 #include <unordered_set>
+#include <unordered_map>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <queue>
+#include <climits>
 using namespace std;
 
 namespace dsac::graph {
@@ -218,6 +224,16 @@ public:
         vertex_list.erase(v.vert->pos);
     }
 
+    // Find vertex by element value
+    Vertex find_vertex(const V& elem) const {
+        for (const ActualVertex& v : vertex_list) {
+            if (v.element == elem) {
+                return Vertex(&v);
+            }
+        }
+        return Vertex(); // Return default (null) vertex if not found
+    }
+
 private:
     void clone(const AdjacencyListGraph& other) {
         directed = other.directed;
@@ -287,50 +303,197 @@ void dump(const AdjacencyListGraph<V,E>& G, std::ostream& out) {
     out << std::endl;
 }
 
+// Dijkstra's shortest path algorithm
+template <typename V, typename E>
+struct ShortestPathResult {
+    VertexIntMap<V,E> distances;
+    VertexVertexMap<V,E> predecessors;
+    bool path_exists;
+    int total_cost;
+    std::list<typename AdjacencyListGraph<V,E>::Vertex> path;
+};
+
+template <typename V, typename E>
+ShortestPathResult<V,E> dijkstra(const AdjacencyListGraph<V,E>& G, 
+    typename AdjacencyListGraph<V,E>::Vertex source,
+    typename AdjacencyListGraph<V,E>::Vertex target) {
+    
+    using Vertex = typename AdjacencyListGraph<V,E>::Vertex;
+    
+    VertexIntMap<V,E> distances;
+    VertexVertexMap<V,E> predecessors;
+    VertexSet<V,E> visited;
+    
+    // Priority queue: pair<distance, vertex>
+    priority_queue<pair<int, Vertex>, vector<pair<int, Vertex>>, 
+                   greater<pair<int, Vertex>>> pq;
+    
+    // Initialize distances
+    for (Vertex v : G.vertices()) {
+        distances[v] = INT_MAX;
+    }
+    distances[source] = 0;
+    pq.push({0, source});
+    
+    while (!pq.empty()) {
+        int current_dist = pq.top().first;
+        Vertex current = pq.top().second;
+        pq.pop();
+        
+        if (visited.count(current)) continue;
+        visited.insert(current);
+        
+        if (current == target) break;
+        
+        for (auto edge : G.incident_edges(current, true)) {
+            Vertex neighbor = G.opposite(edge, current);
+            int new_dist = current_dist + edge.weight();
+            
+            if (new_dist < distances[neighbor]) {
+                distances[neighbor] = new_dist;
+                predecessors[neighbor] = current;
+                pq.push({new_dist, neighbor});
+            }
+        }
+    }
+    
+    ShortestPathResult<V,E> result;
+    result.distances = distances;
+    result.predecessors = predecessors;
+    result.path_exists = (distances[target] != INT_MAX);
+    result.total_cost = distances[target];
+    
+    // Reconstruct path
+    if (result.path_exists) {
+        std::list<Vertex> path;
+        Vertex current = target;
+        while (current != source) {
+            path.push_front(current);
+            current = predecessors[current];
+        }
+        path.push_front(source);
+        result.path = path;
+    }
+    
+    return result;
+}
+
 } // namespace dsac::graph
+
+// Function to load flight data from file
+dsac::graph::AdjacencyListGraph<string, int> loadFlightData(const string& filename) {
+    dsac::graph::AdjacencyListGraph<string, int> graph(true); // directed graph
+    ifstream file(filename);
+    string line;
     
+    // Map to store vertices to avoid duplicates
+    unordered_map<string, dsac::graph::AdjacencyListGraph<string, int>::Vertex> vertices;
+    
+    while (getline(file, line)) {
+        istringstream iss(line);
+        string origin, dest;
+        int cost;
+        
+        if (iss >> origin >> dest >> cost) {
+            // Insert vertices if they don't exist
+            if (vertices.find(origin) == vertices.end()) {
+                vertices[origin] = graph.insert_vertex(origin);
+            }
+            if (vertices.find(dest) == vertices.end()) {
+                vertices[dest] = graph.insert_vertex(dest);
+            }
+            
+            // Insert edge
+            graph.insert_edge(vertices[origin], vertices[dest], cost);
+        }
+    }
+    
+    return graph;
+}
+
 int main() {
-    // Create an undirected graph
-    dsac::graph::AdjacencyListGraph<string, int> graph(false);
-
-    // Insert vertices
-    auto vA = graph.insert_vertex("A");
-    auto vB = graph.insert_vertex("B");
-    auto vC = graph.insert_vertex("C");
-    auto vD = graph.insert_vertex("D");
-
-    // Insert edges with weights
-    graph.insert_edge(vA, vC, 200);
-    graph.insert_edge(vA, vB, 100);
-    graph.insert_edge(vB, vD, 300);
-
-    // Print the initial graph
-    cout << graph.num_vertices() << " vertices and " << graph.num_edges() << " edges" << endl;
+    // Load flight data
+    cout << "Loading flight data from PA12Flights-1.txt" << endl;
+    auto graph = loadFlightData("PA12Flights-1.txt");
     
-    // Print in the second format
-    for (auto v : graph.vertices()) {
-        cout << *v << ":";
-        for (auto e : graph.incident_edges(v)) {
-            auto opposite_vertex = graph.opposite(e, v);
-            cout << " " << *opposite_vertex << "(" << e.weight() << ")";
-        }
-        cout << endl;
-    }
-    cout << endl;
-
-    // Remove edge (A,B) and print again
-    cout << "After removing edge (A,B):" << endl;
-    graph.erase(graph.get_edge(vA, vB));
+    // Display the graph
+    dsac::graph::dump(graph, cout);
     
-    cout << graph.num_vertices() << " vertices and " << graph.num_edges() << " edges" << endl;
-    for (auto v : graph.vertices()) {
-        cout << *v << ":";
-        for (auto e : graph.incident_edges(v)) {
-            auto opposite_vertex = graph.opposite(e, v);
-            cout << " " << *opposite_vertex << "(" << e.weight() << ")";
+    // Test shortest path operations
+    cout << "=== Shortest Path Tests ===" << endl;
+    
+    // Test 1: Find cheapest flight from LAX to JFK
+    cout << "\n1. Finding cheapest flight from LAX to JFK:" << endl;
+    auto lax = graph.find_vertex("LAX");
+    auto jfk = graph.find_vertex("JFK");
+    
+    if (lax != dsac::graph::AdjacencyListGraph<string, int>::Vertex() && 
+        jfk != dsac::graph::AdjacencyListGraph<string, int>::Vertex()) {
+        
+        auto result = dsac::graph::dijkstra(graph, lax, jfk);
+        
+        if (result.path_exists) {
+            cout << "Path found! Total cost: $" << result.total_cost << endl;
+            cout << "Route: ";
+            bool first = true;
+            for (auto vertex : result.path) {
+                if (!first) cout << " -> ";
+                cout << *vertex;
+                first = false;
+            }
+            cout << endl;
+        } else {
+            cout << "No path found from LAX to JFK" << endl;
         }
-        cout << endl;
     }
-
+    
+    // Test 2: Find cheapest flight from JFK
+    cout << "\n2. Finding cheapest flights originating from JFK:" << endl;
+    if (jfk != dsac::graph::AdjacencyListGraph<string, int>::Vertex()) {
+        cout << "Direct flights from JFK:" << endl;
+        for (auto edge : graph.incident_edges(jfk, true)) {
+            auto dest = graph.opposite(edge, jfk);
+            cout << "  JFK -> " << *dest << " ($" << edge.weight() << ")" << endl;
+        }
+        
+        // Find cheapest direct flight from JFK
+        int min_cost = INT_MAX;
+        string cheapest_dest;
+        for (auto edge : graph.incident_edges(jfk, true)) {
+            if (edge.weight() < min_cost) {
+                min_cost = edge.weight();
+                auto dest = graph.opposite(edge, jfk);
+                cheapest_dest = *dest;
+            }
+        }
+        
+        if (min_cost != INT_MAX) {
+            cout << "Cheapest direct flight from JFK: JFK -> " << cheapest_dest 
+                 << " ($" << min_cost << ")" << endl;
+        }
+    }
+    
+    // Test 3: Find all shortest paths from a specific airport
+    cout << "\n3. Shortest paths from ORD to all other airports:" << endl;
+    auto ord = graph.find_vertex("ORD");
+    if (ord != dsac::graph::AdjacencyListGraph<string, int>::Vertex()) {
+        for (auto vertex : graph.vertices()) {
+            if (vertex != ord) {
+                auto result = dsac::graph::dijkstra(graph, ord, vertex);
+                if (result.path_exists) {
+                    cout << "ORD to " << *vertex << ": $" << result.total_cost;
+                    cout << " (";
+                    bool first = true;
+                    for (auto v : result.path) {
+                        if (!first) cout << " -> ";
+                        cout << *v;
+                        first = false;
+                    }
+                    cout << ")" << endl;
+                }
+            }
+        }
+    }
+    
     return 0;
 }
